@@ -182,8 +182,8 @@ int main() {
     printf("\n");
 
     // Benchmark table
-    int seq_lens[] = {64, 128, 256, 512, 1024, 2048};
-    int d_k = 64;
+    int seq_lens[] = {64, 128, 256, 512, 1024, 2048, 4096};
+    int d_k = 128;
     int n_seq = sizeof(seq_lens) / sizeof(seq_lens[0]);
 
     // A40 peak bandwidth for utilization calculation (GB/s)
