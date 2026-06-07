@@ -202,8 +202,8 @@ int main() {
     for (int s = 0; s < n_seq; s++) {
         int seq = seq_lens[s];
 
-        BenchResult naive = benchmark(seq, d_k, 0, 5, 100);
-        BenchResult tiled = benchmark(seq, d_k, 1, 5, 100);
+        BenchResult naive = benchmark(seq, d_k, 0, 10, 1000);
+        BenchResult tiled = benchmark(seq, d_k, 1, 10, 1000);
 
         float speedup = naive.avg_ms / tiled.avg_ms;
 

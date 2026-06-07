@@ -1,5 +1,5 @@
 NVCC        = nvcc
-CUDA_FLAGS  = -O2 -arch=sm_86 -std=c++17   # sm_86 = A40
+CUDA_FLAGS  = -O2 -arch=sm_80 -std=c++17   # sm_80 = A40
 CUDA_FLAGS += -Xcompiler -Wall
 INCLUDES    = -I src/
 
