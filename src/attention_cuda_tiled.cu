@@ -31,22 +31,19 @@ __global__ void qkt_tiled_kernel(
     for (int tile = 0; tile < num_tiles; tile++) {
         int k_idx = tile * TILE_SIZE + threadIdx.y;
 
-        // Cooperative load: each thread loads one element of each tile
         Q_tile[threadIdx.x][threadIdx.y] = (row < seq_len && k_idx < d_k)
             ? Q[row * d_k + k_idx] : 0.0f;
 
-        // K_tile stored transposed for coalesced access during compute
-        K_tile[threadIdx.y][threadIdx.x] = (col < seq_len && k_idx < d_k)
-            ? K[col * d_k + k_idx] : 0.0f;
+        int k_col = blockIdx.y * TILE_SIZE + threadIdx.x;
+        int k_row = tile * TILE_SIZE + threadIdx.y;
+        K_tile[threadIdx.x][threadIdx.y] = (k_col < seq_len && k_row < d_k)
+            ? K[k_col * d_k + k_row] : 0.0f;
 
-        // All threads must finish loading before any thread computes
         __syncthreads();
 
-        // Compute partial dot product entirely from shared memory
         for (int i = 0; i < TILE_SIZE; i++)
-            sum += Q_tile[threadIdx.x][i] * K_tile[i][threadIdx.y];
+            sum += Q_tile[threadIdx.x][i] * K_tile[threadIdx.y][i];
 
-        // All threads must finish computing before loading the next tile
         __syncthreads();
     }
 
@@ -54,8 +51,7 @@ __global__ void qkt_tiled_kernel(
         scores[row * seq_len + col] = sum / sqrtf((float)d_k);
 }
 
-// ─── Tiled scores × V kernel ─────────────────────────────────────────────────
-// Same tiling principle applied to the second matmul (scores × V).
+// ─── Tiled scores x V kernel ─────────────────────────────────────────────────
 
 __global__ void scores_v_tiled_kernel(
     const float* scores, const float* V,
@@ -77,13 +73,15 @@ __global__ void scores_v_tiled_kernel(
         S_tile[threadIdx.x][threadIdx.y] = (row < seq_len && k_idx < seq_len)
             ? scores[row * seq_len + k_idx] : 0.0f;
 
-        V_tile[threadIdx.y][threadIdx.x] = (col < d_k && k_idx < seq_len)
-            ? V[k_idx * d_k + col] : 0.0f;
+        int v_col = blockIdx.y * TILE_SIZE + threadIdx.x;
+        int v_row = tile * TILE_SIZE + threadIdx.y;
+        V_tile[threadIdx.x][threadIdx.y] = (v_col < d_k && v_row < seq_len)
+            ? V[v_row * d_k + v_col] : 0.0f;
 
         __syncthreads();
 
         for (int i = 0; i < TILE_SIZE; i++)
-            sum += S_tile[threadIdx.x][i] * V_tile[i][threadIdx.y];
+            sum += S_tile[threadIdx.x][i] * V_tile[threadIdx.y][i];
 
         __syncthreads();
     }
