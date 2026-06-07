@@ -1,0 +1,6 @@
+bench
+*.o
+*.csv
+results/*.png
+__pycache__/
+*.pyc
