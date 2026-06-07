@@ -52,6 +52,7 @@ GPU benchmarks on NVIDIA A100 80GB PCIe (2 TB/s HBM2 peak, 108 SMs).
 | 1024 | 2.262 | 2.204 | 1.0× | 1.3% | 1.4% |
 | 2048 | 6.519 | 5.688 | 1.1× | 1.7% | 1.9% |
 | 4096 | 20.623 | 16.663 | **1.2×** | 2.0% | 2.5% |
+
 ![GFLOPS Comparison](results/gflops_comparison.png)
 ![Bandwidth Utilization](results/bandwidth_utilization.png)
 ---
